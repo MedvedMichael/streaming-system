@@ -1,0 +1,69 @@
+{
+  "name": "streaming-system",
+  "version": "1.0.0",
+  "main": "index.js",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "client",
+      "server",
+      "media-server"
+    ],
+    "nohoist": [
+      "husky"
+    ]
+  },
+  "repository": "https://github.com/ValeryDrozd/Astrology-Social-Network.git",
+  "author": "Michael Medvediev <misha.medvedev2001@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.17.0",
+    "@typescript-eslint/parser": "^4.17.0",
+    "eslint": "^7.21.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-sonarjs": "^0.6.0",
+    "husky": "=4",
+    "lint-staged": "^10.5.4",
+    "prettier": "^2.2.1",
+    "ts-jest": "^26.5.6"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn lint-staged",
+      "pre-push": "yarn test"
+    }
+  },
+  "lint-staged": {
+    "server/**/*.{ts,tsx}": [
+      "yarn lint:server",
+      "git add"
+    ],
+    "client/**/*.{ts,tsx}": [
+      "yarn lint:client",
+      "git add"
+    ]
+  },
+  "scripts": {
+    "test": "yarn workspaces run test",
+    "build": "yarn workspaces run build",
+    "build:client": "yarn workspace client run build",
+    "build:server": "yarn workspace server run build",
+    "test:client": "yarn workspace client run test",
+    "test:server": "yarn workspace server run test",
+    "lint": "yarn workspaces run lint",
+    "lint:client": "yarn workspace client run lint:write",
+    "lint:server": "yarn workspace server run lint:write",
+    "lint:all": "yarn workspaces run lint:write",
+    "start": "yarn workspace server run start:prod",
+    "start:client": "yarn workspace client run start",
+    "start:server": "yarn workspace server run start:dev"
+  },
+  "dependencies": {
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.13.2",
+    "mongoose": "^6.0.13",
+    "typescript": "^4.2.3",
+    "uuidv4": "^6.2.7"
+  }
+}
