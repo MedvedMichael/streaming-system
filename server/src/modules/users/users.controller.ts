@@ -17,6 +17,7 @@ import { UsersService } from './users.service';
 import {
   ChangeMyPasswordRoute,
   ChangeMyPasswordRouteProps,
+  ChangeStreamKeyRoute,
   GetRecommendationsRoute,
   GetRecommendationsRouteQueryParams,
   MyProfileRoute,
@@ -28,16 +29,17 @@ import {
 } from '@interfaces/routes/user-routes';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { JwtValidationOutput } from '../auth/strateries/jwt.strategy';
-import { IProfile, IProfileWithProviders, UserUpdates } from '@interfaces/User.interface';
+import {
+  IProfile,
+  IProfileWithProviders,
+  UserUpdates,
+} from '@interfaces/User.interface';
 import sendTokensPair from 'src/helpers/send-tokens-pair';
 import { JwtService } from '@nestjs/jwt';
 
 @Controller(UserRoute)
 export class UsersController {
-  constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService,
-  ) {}
+  constructor(private usersService: UsersService) {}
 
   @UseGuards(JwtAuthGuard)
   @Get(MyProfileRoute)
@@ -50,8 +52,8 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get(UserByIDRoute)
-  async getUserGyID(@Param('id') userID: string): Promise<IProfile> {
-    return await this.usersService.getProfile(userID);
+  async getUserGyID(@Param('id') id: string): Promise<IProfile> {
+    return await this.usersService.getProfile(id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -83,5 +85,14 @@ export class UsersController {
     );
 
     sendTokensPair(res, pair);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @Patch(ChangeStreamKeyRoute)
+  async changeStreamKey(
+    @Request() { user }: JwtValidationOutput,
+  ): Promise<{ streamKey: string }> {
+    return await this.usersService.changeStreamKey(user.userID);
   }
 }

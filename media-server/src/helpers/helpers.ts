@@ -1,6 +1,6 @@
 const spawn = require('child_process').spawn
 import config from '../config/default'
-const cmd = config.rtmp_server.trans.ffmpeg;
+const cmd = config.rtmp_server.fission.ffmpeg;
 
 export const generateStreamThumbnail = (stream_key: string) => {
     const args = [

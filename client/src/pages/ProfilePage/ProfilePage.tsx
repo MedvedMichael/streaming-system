@@ -13,11 +13,12 @@ import {
   Label,
   Form,
   SexBlock,
-} from './styles';
+} from "./styles";
 import chatStore, { reloadChatStore } from "stores/store";
 import { useParams } from "react-router";
 import {
   changeMyPassword,
+  changeMyStreamKey,
   getUserProfile,
   patchMyProfile,
 } from "services/users.service";
@@ -145,20 +146,53 @@ export default observer(function ProfilePage(): JSX.Element {
 
   const makeNewChat = async (): Promise<void> => {
     const oldChat = chatStore.chats.find(
-      (c) => c.senderInfo.senderID === user.userID
+      (c) => c.senderInfo.senderID === user._id
     );
     if (!oldChat) {
-      const chatId = await chatStore.addNewChat(user.userID);
+      const chatId = await chatStore.addNewChat(user._id);
       return history.push(`/chat?chatID=${chatId}`);
     }
     history.push(`/chat?chatID=${oldChat?.chatID}`);
   };
+
+  const changeStreamingKey = async () => {
+    const {streamKey} = await changeMyStreamKey(chatStore.accessToken);
+    setUser(u => ({...u, streamKey} as IProfileWithProviders))
+  };
+
+  const changeProfileButton = (
+    <StyledButton
+      onClick={(): void => {
+        setShowModal(true);
+      }}
+    >
+      Change profile
+    </StyledButton>
+  );
 
   const changePasswordButton = user.authProviders.includes("local") ? (
     <StyledButton onClick={(): void => setShowChangePasswordModal(true)}>
       Change password
     </StyledButton>
   ) : null;
+
+  const changeStreamKeyButton = (
+    <StyledButton onClick={changeStreamingKey}>
+      Change Streaming Key
+    </StyledButton>
+  );
+
+  const logoutButton = (
+    <StyledButton
+      onClick={async () => {
+        await logout();
+        reloadChatStore();
+        window.location.reload();
+      }}
+    >
+      Logout
+    </StyledButton>
+  );
 
   return (
     <ProfileBlockView>
@@ -167,30 +201,18 @@ export default observer(function ProfilePage(): JSX.Element {
       <Title>Profile</Title>
       <InfoBlock>
         <ProfileDetails>
-          <DetailInfo>{user?.nickname}</DetailInfo>
-          <DetailInfo>{user?.email}</DetailInfo>
+          <DetailInfo>Nickname: {user?.nickname}</DetailInfo>
+          <DetailInfo>Email: {user?.email}</DetailInfo>
+          <DetailInfo>Streaming Key: {user?.streamKey}</DetailInfo>
         </ProfileDetails>
       </InfoBlock>
       <ButtonBlock>
-        {user?.userID === chatStore?.user.userID ? (
+        {user?._id === chatStore?.user._id ? (
           <>
-            <StyledButton
-              onClick={(): void => {
-                setShowModal(true);
-              }}
-            >
-              Change profile
-            </StyledButton>
+            {changeProfileButton}
             {changePasswordButton}
-            <StyledButton
-              onClick={async () => {
-                await logout();
-                reloadChatStore();
-                window.location.reload();
-              }}
-            >
-              Logout
-            </StyledButton>
+            {changeStreamKeyButton}
+            {logoutButton}
           </>
         ) : (
           <StyledButton onClick={makeNewChat}>Write a message</StyledButton>

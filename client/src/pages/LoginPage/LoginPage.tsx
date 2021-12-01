@@ -18,7 +18,7 @@ export default observer(function LoginPage(): JSX.Element {
   useEffect(() => {
     const { user } = chatStore;
     if (user) {
-      history.push('/users/' + user.userID);
+      history.push('/users/' + user._id);
     }
   }, [history, chatStore?.user]);
   const handleGoogleClick = async (res: GoogleLoginResponse): Promise<void> => {

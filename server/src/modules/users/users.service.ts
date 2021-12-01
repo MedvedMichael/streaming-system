@@ -1,11 +1,16 @@
 import { User } from '@database/Schema';
-import IUser, { IProfile, IProfileWithProviders, UserUpdates } from '@interfaces/User.interface';
+import IUser, {
+  IProfile,
+  IProfileWithProviders,
+  UserUpdates,
+} from '@interfaces/User.interface';
 import {
   BadRequestException,
   forwardRef,
   Inject,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import * as shortid from 'shortid';
 import { AuthService } from '../auth/auth.service';
@@ -14,6 +19,7 @@ import { v4 as uuid } from 'uuid';
 import { Document } from 'mongoose';
 import AuthTokensPair from '../auth/dto/tokens-pair.dto';
 import { ScryptService } from '../scrypt/scrypt.service';
+import { StreamsService } from '../streams/streams.service';
 
 @Injectable()
 export class UsersService {
@@ -23,6 +29,7 @@ export class UsersService {
     private scryptService: ScryptService,
     @Inject(forwardRef(() => AuthService))
     private authService: AuthService,
+    private streamsService: StreamsService,
   ) {}
 
   async registerUser({
@@ -30,7 +37,6 @@ export class UsersService {
     nickname,
   }: RegisterData): Promise<Document<any, any, IUser> & IUser> {
     const user = new User();
-    user.userID = uuid();
     user.email = email;
     user.nickname = nickname;
     user.streamKey = shortid.generate();
@@ -45,13 +51,13 @@ export class UsersService {
     return user;
   }
 
-  async getProfile(userID: string): Promise<IProfileWithProviders> {
-    const user = await User.findOne({ userID });
+  async getProfile(id: string): Promise<IProfileWithProviders> {
+    const user = await User.findById(id);
     if (!user) throw new NotFoundException();
 
-    const { email, nickname, streamKey } = user;
+    const { _id, email, nickname, streamKey } = user;
     return {
-      userID,
+      _id,
       email,
       nickname,
       streamKey,
@@ -70,7 +76,7 @@ export class UsersService {
     fingerprint: string,
     userAgent: string,
   ): Promise<AuthTokensPair> {
-    const user = await User.findOne({ userID });
+    const user = await User.findById(userID);
     if (!user) throw new NotFoundException();
 
     const providerIndex = user.authProviders.findIndex(
@@ -97,5 +103,18 @@ export class UsersService {
       fingerprint,
       userAgent,
     });
+  }
+
+  async changeStreamKey(userID: string): Promise<{ streamKey: string }> {
+    const user = await User.findById(userID);
+    if (!user) throw new UnauthorizedException();
+
+    await this.streamsService.deleteStream(user.streamKey);
+
+    const newStreamKey = shortid.generate();
+    user.streamKey = newStreamKey;
+
+    await user.save();
+    return { streamKey: user.streamKey };
   }
 }

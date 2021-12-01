@@ -14,7 +14,7 @@ export interface IRefreshSession {
 }
 
 export interface IProfile {
-  userID: string;
+  _id: string;
   nickname: string;
   email: string;
   streamKey: string;

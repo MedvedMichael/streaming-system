@@ -2,12 +2,17 @@ import getAstrologicalToken from "helpers/get-astrological-token";
 import { NewToken } from "interfaces/new-token";
 import {
   FullChangeMyPasswordRoute,
+  FullChangeStreamKeyRoute,
   FullGetRecommendationsRoute,
   FullMyProfileRoute,
   FullPatchMyProfileRoute,
   FullUserByIDRoute,
 } from "interfaces/routes/user-routes";
-import User, { IProfile, IProfileWithProviders, UserUpdates } from "interfaces/User.interface";
+import User, {
+  IProfile,
+  IProfileWithProviders,
+  UserUpdates,
+} from "interfaces/User.interface";
 
 export const getHeaders = (
   accessToken: string
@@ -54,7 +59,10 @@ export async function getUserProfile(
   accessToken: string,
   userID: string
 ): Promise<IProfileWithProviders> {
-  return (await get(FullUserByIDRoute + userID, accessToken)) as IProfileWithProviders;
+  return (await get(
+    FullUserByIDRoute + userID,
+    accessToken
+  )) as IProfileWithProviders;
 }
 
 export async function getMyProfile(accessToken: string): Promise<IProfile> {
@@ -82,4 +90,11 @@ export async function changeMyPassword(
   );
 
   return (await res.json()) as NewToken;
+}
+
+export async function changeMyStreamKey(
+  accessToken: string
+): Promise<{streamKey: string}> {
+  const res = await patch(FullChangeStreamKeyRoute, {}, accessToken, true);
+  return await res.json()
 }

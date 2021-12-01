@@ -5,11 +5,6 @@ const Schema = mongoose.Schema;
 const SchemaTypes = mongoose.Schema.Types;
 
 const UserSchema = new Schema({
-  userID: {
-    type: String,
-    trim: true,
-    required: true,
-  },
   nickname: {
     type: String,
     trim: true,
@@ -25,6 +20,7 @@ const UserSchema = new Schema({
     type: String,
     trim: true,
     required: true,
+    unique: true
   },
 
   authProviders: [

@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import LoginPage from 'pages/LoginPage/LoginPage';
 import RegistrationPage from 'pages/RegistrationPage/RegistrationPage';
 import ProfilePage from 'pages/ProfilePage/ProfilePage';
+import StreamPage from 'pages/StreamPage/StreamPage';
+import 'video.js/dist/video-js.css';
 
 function App() {
   return (
@@ -14,6 +16,7 @@ function App() {
             <Route path="/" exact component={LoginPage}></Route>
             <Route path="/registration" component={RegistrationPage}></Route>
             <Route path="/users/:id" component={ProfilePage} />
+            <Route path="/stream/:streamKey" component={StreamPage}></Route>
           </Switch>
         </MainLayout>
       </Router>

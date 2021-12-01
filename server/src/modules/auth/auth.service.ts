@@ -144,7 +144,7 @@ export class AuthService {
     fingerprint,
     userAgent,
   }: RefreshSessionDTO): Promise<AuthTokensPair> {
-    const accessToken = this.jwtService.sign({ userID: user.userID });
+    const accessToken = this.jwtService.sign({ userID: user._id });
     const refreshToken = uuid();
 
     user.refreshSessions = user.refreshSessions.sort(

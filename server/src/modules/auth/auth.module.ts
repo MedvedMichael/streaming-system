@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strateries/jwt.strategy';
 import { UsersService } from '../users/users.service';
 import { UsersModule } from '../users/users.module';
+import { StreamsService } from '../streams/streams.service';
 
 require('dotenv').config();
 
@@ -17,8 +18,8 @@ require('dotenv').config();
       signOptions: { expiresIn: '30m' },
     }),
   ],
-  providers: [AuthService, ScryptService, UsersService, JwtStrategy],
+  providers: [AuthService, ScryptService, UsersService, JwtStrategy, StreamsService],
   controllers: [AuthController],
-  exports: [AuthService, ScryptService, UsersService, JwtModule, JwtStrategy],
+  exports: [AuthService, ScryptService, UsersService, JwtModule, JwtStrategy, StreamsService],
 })
 export class AuthModule {}
