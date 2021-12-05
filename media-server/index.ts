@@ -6,7 +6,7 @@ import { generateStreamThumbnail } from "./src/helpers/helpers";
 import thumbnail_generator from "./src/cron/thumbnails";
 import * as mongoose from "mongoose";
 import * as dotenv from "dotenv";
-import fetch from 'node-fetch'
+import fetch from "node-fetch";
 
 dotenv.config();
 
@@ -23,6 +23,7 @@ dotenv.config();
     "prePublish",
     async (id: string, StreamPath: string, args: unknown) => {
       let streamKey = getStreamKeyFromStreamPath(StreamPath);
+      streamKey = streamKey.split("_")[0];
       console.log(
         "[NodeEvent on prePublish]",
         `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`
@@ -35,7 +36,6 @@ dotenv.config();
         session.reject();
         return;
       }
-
       const res = await fetch(`${process.env.SERVER_URL}/streams/new`, {
         method: "POST",
         body: JSON.stringify({
@@ -43,21 +43,42 @@ dotenv.config();
         }),
         headers: {
           Authorization: `${process.env.MEDIA_SERVER_SECRET}`,
+          "Content-Type": "application/json",
         },
       });
 
-      if(!res.ok) {
+      if (!res.ok) {
         let session = nms.getSession(id);
         session.reject();
         return;
       }
 
-      // generateStreamThumbnail(streamKey);
+      const body = await res.json();
+      console.log(body)
+      if (body.created) {
+        generateStreamThumbnail(streamKey);
+      }
+    }
+  );
+
+  nms.on(
+    "donePublish",
+    async (id: string, StreamPath: string, args: unknown) => {
+      let streamKey = getStreamKeyFromStreamPath(StreamPath);
+      const res = await fetch(`${process.env.SERVER_URL}/streams/remove`, {
+        method: "DELETE",
+        body: JSON.stringify({
+          streamKey: streamKey.split("_")[0],
+        }),
+        headers: {
+          Authorization: `${process.env.MEDIA_SERVER_SECRET}`,
+          "Content-Type": "application/json",
+        },
+      });
     }
   );
 
   console.log("Media server is up!");
   nms.run();
+  thumbnail_generator.start();
 })();
-
-// thumbnail_generator.start();

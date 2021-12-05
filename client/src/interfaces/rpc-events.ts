@@ -1,13 +1,12 @@
 import Chat from './chat';
-import Message from './message';
-import { NewMessage } from './new-message';
+import { IMessageWithNickname } from './Stream.interface';
 
 export const GetMessagesFunction = 'getMessages';
 export type GetMessagesFunctionResponse = Chat[];
 
 export const AddNewMessageFunction = 'addNewMessage';
-export interface AddNewMessageParams {
-  message: Message;
+export type AddNewMessageParams = {
+  text: string
 }
 
 export const AddNewChatFunction = 'addNewChat';
@@ -16,7 +15,7 @@ export interface AddNewChatParams {
 }
 
 export const NewMessageNotification = 'newMessage';
-export type NewMessageNotificationParams = NewMessage;
+export type NewMessageNotificationParams = IMessageWithNickname;
 
 export interface DeliveredEvent {
   ok: boolean;
@@ -32,9 +31,11 @@ export interface ConnectionStatusNotificationPayload {
 export const NewChatNotification = 'newChat';
 export type NewChatNotificationParams = Chat;
 
-export const GetOldMessagesFunction = 'getOldMessages';
-export interface GetOldMessagesParams {
-  chatID: string;
-  lastMessageID: string;
+export const GetStreamChatFunction = 'getStreamChat';
+export type GetStreamChatResponse = IMessageWithNickname[];
+
+
+export const SetStreamFunction = 'setStream'
+export interface SetStreamParams {
+  streamKey: string
 }
-export type GetOldMessagesResponse = Message[];

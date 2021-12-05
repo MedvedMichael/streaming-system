@@ -1,18 +1,14 @@
 import { observer } from "mobx-react";
 import {
   Title,
-  AvatarImage,
   ProfileBlockView,
   DetailInfo,
   InfoBlock,
   ProfileDetails,
   ButtonBlock,
   EditInput,
-  SelectSex,
-  SelectZodiac,
   Label,
   Form,
-  SexBlock,
 } from "./styles";
 import chatStore, { reloadChatStore } from "stores/store";
 import { useParams } from "react-router";
@@ -106,7 +102,7 @@ export default observer(function ProfilePage(): JSX.Element {
           onChange={({ target }): void =>
             setNewUserInfo((u) => ({
               ...(u as User),
-              firstName: target.value,
+              nickname: target.value,
             }))
           }
           type="text"
@@ -144,20 +140,9 @@ export default observer(function ProfilePage(): JSX.Element {
     </Modal>
   ) : null;
 
-  const makeNewChat = async (): Promise<void> => {
-    const oldChat = chatStore.chats.find(
-      (c) => c.senderInfo.senderID === user._id
-    );
-    if (!oldChat) {
-      const chatId = await chatStore.addNewChat(user._id);
-      return history.push(`/chat?chatID=${chatId}`);
-    }
-    history.push(`/chat?chatID=${oldChat?.chatID}`);
-  };
-
   const changeStreamingKey = async () => {
-    const {streamKey} = await changeMyStreamKey(chatStore.accessToken);
-    setUser(u => ({...u, streamKey} as IProfileWithProviders))
+    const { streamKey } = await changeMyStreamKey(chatStore.accessToken);
+    setUser((u) => ({ ...u, streamKey } as IProfileWithProviders));
   };
 
   const changeProfileButton = (
@@ -207,15 +192,20 @@ export default observer(function ProfilePage(): JSX.Element {
         </ProfileDetails>
       </InfoBlock>
       <ButtonBlock>
-        {user?._id === chatStore?.user._id ? (
+        <StyledButton
+          onClick={async () => {
+            history.push("/streams");
+          }}
+        >
+          Streams
+        </StyledButton>
+        {user?._id === chatStore?.user._id && (
           <>
             {changeProfileButton}
             {changePasswordButton}
             {changeStreamKeyButton}
             {logoutButton}
           </>
-        ) : (
-          <StyledButton onClick={makeNewChat}>Write a message</StyledButton>
         )}
       </ButtonBlock>
     </ProfileBlockView>

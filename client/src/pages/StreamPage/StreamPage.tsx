@@ -1,91 +1,73 @@
+import Chat from "components/Chat";
 import { observer } from "mobx-react";
-import { useEffect, Component, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router";
+import chatStore from "stores/store";
 import styled from "styled-components";
-import videojs, { VideoJsPlayerOptions, VideoJsPlayer } from "video.js";
+//@ts-ignore
+import ReactFlvPlayer from "../../components/Player";
 
-export default observer(
-  class StreamPage extends Component<
-    {},
-    { stream: boolean; videoJsOptions: VideoJsPlayerOptions | null }
-  > {
-    player!: VideoJsPlayer;
-    videoNode!: HTMLVideoElement;
-    constructor(props: any) {
-      super(props);
+export default observer(function StreamPage() {
+  const { streamKey } = useParams<{ streamKey: string }>();
 
-      this.state = {
-        stream: false,
-        videoJsOptions: null,
-      };
-    }
-
-    async componentDidMount() {
-      this.setState(
-        {
-          stream: true,
-          videoJsOptions: {
-            autoplay: false,
-            controls: true,
-            sources: [
-              {
-                src:
-                  "http://192.168.1.175:" +
-                  "8888" +
-                  "/live/" +
-                  "FuUtjnCDF" +
-                  "/index.m3u8",
-                type: "application/x-mpegURL",
-              },
-            ],
-            fluid: true,
-          },
-        },
-        () => {
-          this.player = videojs(
-            this.videoNode,
-            this.state.videoJsOptions as VideoJsPlayerOptions,
-            function onPlayerReady() {
-              console.log("onPlayerReady", this);
-            }
-          );
-        }
-      );
-    }
-
-    componentWillUnmount() {
-      if (this.player) {
-        this.player.dispose();
+  useEffect(() => {
+    (async () => {
+      if (chatStore.initialized) {
+        await chatStore.initSocket();
+        await chatStore.fetchStreamsData();
+        await chatStore.setStream(streamKey);
+        await chatStore.getMessages();
       }
-    }
+    })();
+  }, [chatStore.initialized]);
 
-    render() {
-      return (
-        <StreamPageView>
-          <Player>
-            {this.state.stream ? (
-              <div data-vjs-player>
-                <video
-                  ref={(node) => (this.videoNode = node as HTMLVideoElement)}
-                  className="video-js vjs-big-play-centered"
-                />
-              </div>
-            ) : (
-              " Loading ... "
-            )}
-          </Player>
-        </StreamPageView>
-      );
-    }
-  }
-);
+  const stream = chatStore.streamsData.find((s) => s.streamKey === streamKey);
+  if (!stream) return <div></div>;
+
+
+  return (
+    <StreamPageView>
+      <PlayerWrapper>
+        <ReactFlvPlayer type="flv" stream={stream} streamKey={streamKey} />
+      </PlayerWrapper>
+      <ChatWrapper>
+        <Chat
+          messages={chatStore.currentChat}
+          onMessageAdd={(m) => chatStore.addMessage(m)}
+        />
+      </ChatWrapper>
+    </StreamPageView>
+  );
+});
 
 const StreamPageView = styled.div`
   display: flex;
   flex-grow: 1;
-  flex-direction: column;
+  padding: 0.5rem;
+  height: 98vh;
+
+  @media (max-width: 1000px) {
+    flex-direction: column;
+  }
 `;
 
-const Player = styled.div`
+const PlayerWrapper = styled.div`
   display: flex;
-  margin: auto 0;
+  flex-direction: column;
+  flex-grow: 2;
+
+  border: 1px solid #fff;
+  @media (max-width: 1000px) {
+    flex-grow: 0;
+  }
+`;
+
+const ChatWrapper = styled.div`
+  display: flex;
+  flex-grow: 1;
+  /* flex-direction: column; */
+
+  @media (max-width: 1000px) {
+    flex-direction: column;
+  }
 `;

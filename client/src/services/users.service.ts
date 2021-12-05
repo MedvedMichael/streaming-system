@@ -3,57 +3,17 @@ import { NewToken } from "interfaces/new-token";
 import {
   FullChangeMyPasswordRoute,
   FullChangeStreamKeyRoute,
-  FullGetRecommendationsRoute,
   FullMyProfileRoute,
   FullPatchMyProfileRoute,
   FullUserByIDRoute,
 } from "interfaces/routes/user-routes";
-import User, {
+import {
   IProfile,
   IProfileWithProviders,
   UserUpdates,
 } from "interfaces/User.interface";
+import { get, patch } from "./fetch-functions";
 
-export const getHeaders = (
-  accessToken: string
-): { "Content-Type": string; Authorization: string } => ({
-  "Content-Type": "application/json",
-  Authorization: `Bearer ${accessToken}`,
-});
-
-const get = async (path: string, accessToken: string): Promise<unknown> => {
-  const res = await fetch(process.env.REACT_APP_SERVER_URL + path, {
-    method: "GET",
-    headers: getHeaders(accessToken),
-  });
-  if (!res.ok) {
-    throw new Error("Error");
-  }
-  const result = await res.json();
-  result.birthDate = result?.birthDate
-    ? new Date(result.birthDate)
-    : new Date();
-  return result;
-};
-
-const patch = async (
-  path: string,
-  body: Record<string, unknown>,
-  accessToken: string,
-  cookies = false
-): Promise<Response> => {
-  const res = await fetch(process.env.REACT_APP_SERVER_URL + path, {
-    method: "PATCH",
-    body: JSON.stringify(body),
-    headers: getHeaders(accessToken),
-    credentials: cookies ? "include" : "omit",
-  });
-  if (!res.ok) {
-    throw new Error("Error");
-  }
-
-  return res;
-};
 
 export async function getUserProfile(
   accessToken: string,
@@ -94,7 +54,7 @@ export async function changeMyPassword(
 
 export async function changeMyStreamKey(
   accessToken: string
-): Promise<{streamKey: string}> {
+): Promise<{ streamKey: string }> {
   const res = await patch(FullChangeStreamKeyRoute, {}, accessToken, true);
-  return await res.json()
+  return await res.json();
 }

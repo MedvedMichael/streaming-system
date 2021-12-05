@@ -21,7 +21,7 @@ export interface IProfile {
 }
 
 export interface IProfileWithProviders extends IProfile {
-  authProviders: string[]
+  authProviders: string[];
 }
 
 export default interface IUser extends IProfile {

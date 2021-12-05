@@ -18,8 +18,21 @@ require('dotenv').config();
       signOptions: { expiresIn: '30m' },
     }),
   ],
-  providers: [AuthService, ScryptService, UsersService, JwtStrategy, StreamsService],
+  providers: [
+    AuthService,
+    ScryptService,
+    UsersService,
+    JwtStrategy,
+    StreamsService,
+  ],
   controllers: [AuthController],
-  exports: [AuthService, ScryptService, UsersService, JwtModule, JwtStrategy, StreamsService],
+  exports: [
+    AuthService,
+    ScryptService,
+    UsersService,
+    JwtModule,
+    JwtStrategy,
+    StreamsService,
+  ],
 })
 export class AuthModule {}

@@ -51,9 +51,14 @@ export class UsersService {
     return user;
   }
 
-  async getProfile(id: string): Promise<IProfileWithProviders> {
+  async getUser(id: string): Promise<IUser> {
     const user = await User.findById(id);
     if (!user) throw new NotFoundException();
+    return user;
+  }
+
+  async getProfile(id: string): Promise<IProfileWithProviders> {
+    const user = await this.getUser(id);
 
     const { _id, email, nickname, streamKey } = user;
     return {
@@ -65,8 +70,8 @@ export class UsersService {
     };
   }
 
-  async patchUser(email: string, updates: UserUpdates): Promise<void> {
-    await User.updateOne({ email }, updates);
+  async patchUser(_id: string, updates: UserUpdates): Promise<void> {
+    await User.updateOne({ _id }, updates);
   }
 
   async changePassword(

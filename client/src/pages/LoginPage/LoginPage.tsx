@@ -74,6 +74,7 @@ export default observer(function LoginPage(): JSX.Element {
             onSuccess={(res): Promise<void> =>
               handleGoogleClick(res as GoogleLoginResponse)
             }
+            onFailure={(res) => console.log(res)}
             cookiePolicy={'single_host_origin'}
           />
         </ButtonBox>

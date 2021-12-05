@@ -43,7 +43,7 @@
     "start": "yarn workspace server run start:prod",
     "start:client": "yarn workspace client run start",
     "start:server": "yarn workspace server run start:dev",
-    "start:media": "yarn workspace media-server run dev"
+    "start:media": "yarn workspace media-server run start"
   },
   "dependencies": {
     "class-transformer": "^0.5.1",

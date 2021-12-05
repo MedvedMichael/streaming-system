@@ -7,29 +7,39 @@ import {
   AddNewChatFunction,
   AddNewChatParams,
   AddNewMessageFunction,
+  AddNewMessageParams,
   ConnectionStatusNotification,
   ConnectionStatusNotificationPayload,
+  DeliveredEvent,
   GetMessagesFunction,
   GetMessagesFunctionResponse,
-  GetOldMessagesFunction,
-  GetOldMessagesParams,
-  GetOldMessagesResponse,
+  GetStreamChatFunction,
+  GetStreamChatResponse,
+  // GetOldMessagesResponse,
   NewChatNotification,
   NewMessageNotification,
   NewMessageNotificationParams,
+  SetStreamFunction,
 } from "interfaces/rpc-events";
 import { ServerMessage } from "interfaces/message";
 import { refresh } from "services/auth.service";
 import { getMyProfile } from "services/users.service";
-import User, { IProfile } from "interfaces/User.interface";
+import { IProfile } from "interfaces/User.interface";
+import {
+  IMessageWithNickname,
+  ServerStream,
+} from "interfaces/Stream.interface";
+import { getStreamsData } from "services/streams.service";
 
 export class ChatStore {
   accessToken!: string;
-  chats: Chat[] = [];
+  currentChat: IMessageWithNickname[] = [];
   online = false;
   myID!: string;
+  streamKey!: string;
   user!: IProfile;
   initialized = false;
+  streamsData: ServerStream[] = [];
   private exp = 0;
   private socket!: WebSocketClient;
 
@@ -49,52 +59,37 @@ export class ChatStore {
     this.user = newUserInfo;
   }
 
-  initSocket(): void {
-    this.socket = new WebSocketClient();
-    this.socket.listenTo("open", () => {
-      this.online = true;
-      this.socket
-        .listenOnce<ConnectionStatusNotificationPayload>(
-          ConnectionStatusNotification
-        )
-        .then(async (res) => {
-          if (!res.ok) {
-            await this.checkValidToken();
-          }
-
-          await this.sendMessages();
-          await this.getMessages();
+  async initSocket(): Promise<void> {
+    if (!this.socket) {
+      return new Promise((resolve, reject) => {
+        this.socket = new WebSocketClient();
+        this.socket.listenTo("open", () => {
+          this.online = true;
+          this.socket
+            .listenOnce<ConnectionStatusNotificationPayload>(
+              ConnectionStatusNotification
+            )
+            .then(async (res) => {
+              if (!res.ok) {
+                await refresh();
+                return reject();
+              }
+              resolve();
+            });
         });
-    });
 
-    this.socket.listenTo("close", (res) => {
-      this.online = false;
-    });
+        this.socket.listenTo("error", (err) => {
+          console.log(err);
+        });
 
-    this.socket.listenTo("error", (err) => {
-      console.log(err);
-    });
-
-    this.socket.listenTo(
-      NewMessageNotification,
-      (message: NewMessageNotificationParams) => {
-        const messageList = this.chats.find(
-          (chat) => chat.chatID === message.chatID
-        )?.messageList;
-        if (!messageList?.find((m) => m.messageID === message.messageID)) {
-          messageList?.push({
-            ...message,
-            time: new Date(message.time),
-            isSent: true,
-          });
-        }
-        this.chats = [...this.chats];
-      }
-    );
-
-    this.socket.listenTo(NewChatNotification, (chat: Chat) => {
-      this.chats = [chat, ...this.chats];
-    });
+        this.socket.listenTo(
+          NewMessageNotification,
+          (message: NewMessageNotificationParams) => {
+            this.currentChat = [{...message, createdAt: new Date(message.createdAt)}, ...this.currentChat];
+          }
+        );
+      });
+    }
   }
 
   async setAccessToken(accessToken: string): Promise<void> {
@@ -111,38 +106,35 @@ export class ChatStore {
     }
   }
 
+  async setStream(streamKey: string) {
+    await this.socket.call(SetStreamFunction, { streamKey });
+    this.streamKey = streamKey;
+  }
+
   async getMessages(): Promise<void> {
     try {
-      await this.checkValidToken();
-      const res = await this.socket.call<GetMessagesFunctionResponse>(
-        GetMessagesFunction
+      const messages = await this.socket.call<GetStreamChatResponse>(
+        GetStreamChatFunction
       );
-      this.chats = res.map((chat) => ({
-        ...chat,
-        messageList: chat.messageList
-          .map((message) => ({
-            ...message,
-            time: new Date(message.time),
-          }))
-          .sort((a, b) => a.time.getTime() - b.time.getTime()),
+      this.currentChat = messages.map((m) => ({
+        ...m,
+        createdAt: new Date(m.createdAt),
       }));
     } catch (error) {}
   }
 
-  addMessage(chatID: string, text: string): void {
-    const id = uuid();
-    const message: ServerMessage = {
-      messageID: id,
-      senderID: this.myID,
-      time: new Date(),
+  async addMessage(text: string): Promise<void> {
+    const res: DeliveredEvent = await this.socket.call(AddNewMessageFunction, {
       text,
-    };
-    const messagesQueue = this.getLocalStorageQueue();
-    this.setLocalStorageQueue([...messagesQueue, { ...message, chatID }]);
-    this.chats
-      .find((chat) => chat.chatID === chatID)
-      ?.messageList.push({ ...message, isSent: false });
-    this.sendOneMessage({ ...message, chatID });
+    });
+    if (res.ok) {
+      this.currentChat.splice(0, 0, {
+        text,
+        postedBy: this.user._id,
+        nickname: this.user.nickname,
+        createdAt: new Date(),
+      });
+    }
   }
 
   getLocalStorageQueue(): NewMessage[] {
@@ -162,50 +154,6 @@ export class ChatStore {
     localStorage.setItem("queue", JSON.stringify(messagesQueue));
   }
 
-  async sendOneMessage(msg: NewMessage): Promise<void> {
-    await this.checkValidToken();
-
-    if (this.online) {
-      const res: { ok: boolean } = await this.socket.call(
-        AddNewMessageFunction,
-        msg
-      );
-      if (res.ok) {
-        const currentChatIndex = this.chats.findIndex(
-          (chat) => chat.chatID === msg.chatID
-        );
-        const currentMessageIndex = this.chats[
-          currentChatIndex
-        ]?.messageList.findIndex(
-          (message) => message.messageID === msg.messageID
-        );
-        if (currentChatIndex !== -1 && currentMessageIndex !== -1) {
-          const message =
-            this.chats[currentChatIndex].messageList[currentMessageIndex];
-          message.isSent = true;
-          this.chats[currentChatIndex].messageList[currentMessageIndex] = {
-            ...message,
-          };
-          this.chats[currentChatIndex] = { ...this.chats[currentChatIndex] };
-          const messagesQueue = this.getLocalStorageQueue();
-          messagesQueue.splice(
-            messagesQueue.findIndex((m) => m.messageID === msg.messageID),
-            1
-          );
-          this.setLocalStorageQueue(messagesQueue);
-        }
-      }
-    }
-  }
-
-  async sendMessages(): Promise<void> {
-    const messagesQueue = this.getLocalStorageQueue();
-    for (const message of messagesQueue) {
-      console.log(message);
-      await this.sendOneMessage(message);
-    }
-  }
-
   async setMyProfile(): Promise<void> {
     try {
       const user = await getMyProfile(this.accessToken);
@@ -216,29 +164,8 @@ export class ChatStore {
     }
   }
 
-  async addNewChat(memberID: string): Promise<string> {
-    const chat: Chat = await this.socket.call(AddNewChatFunction, {
-      memberID,
-    } as AddNewChatParams);
-    this.chats = [chat, ...this.chats];
-    return chat.chatID;
-  }
-
-  async getMessagesOfChat(
-    chatID: string,
-    lastMessageID: string
-  ): Promise<void> {
-    try {
-      const res = (
-        await this.socket.call<GetOldMessagesResponse>(GetOldMessagesFunction, {
-          chatID,
-          lastMessageID,
-        } as GetOldMessagesParams)
-      ).map((m) => ({ ...m, time: new Date(m.time) }));
-      this.chats
-        .find((chat) => chat.chatID === chatID)
-        ?.messageList.unshift(...res);
-    } catch (error) {}
+  async fetchStreamsData() {
+    this.streamsData = await getStreamsData(this.accessToken);
   }
 }
 

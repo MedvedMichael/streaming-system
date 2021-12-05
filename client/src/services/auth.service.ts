@@ -8,25 +8,8 @@ import {
   FullRefreshTokensRoute,
   FullRegisterRoute,
 } from 'interfaces/routes/auth-routes';
+import { post } from './fetch-functions';
 
-const post = async (
-  path: string,
-  body?: Record<string, unknown>,
-): Promise<unknown> => {
-  const res = await fetch(process.env.REACT_APP_SERVER_URL + path, {
-    method: 'POST',
-    body: body ? JSON.stringify(body) : undefined,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    mode: 'cors',
-    credentials: 'include',
-  });
-  if (!res.ok) {
-    throw new Error('Invalid request');
-  }
-  return await res.json();
-};
 
 export async function login(
   email: string,

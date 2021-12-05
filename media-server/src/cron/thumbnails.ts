@@ -1,5 +1,5 @@
 const CronJob = require("cron").CronJob;
-//@ts-ignore
+// @ts-ignore
 import * as request from "request";
 import { generateStreamThumbnail } from "../helpers/helpers";
 import config from "../config/default";
@@ -15,7 +15,11 @@ const job = new CronJob(
         if (typeof (streams["live"] !== undefined)) {
           let live_streams = streams["live"];
           for (let stream in live_streams) {
-            if (!live_streams.hasOwnProperty(stream)) continue;
+            if (
+              !live_streams.hasOwnProperty(stream) ||
+              stream.split("_").length !== 1
+            )
+              continue;
             generateStreamThumbnail(stream);
           }
         }
@@ -26,4 +30,4 @@ const job = new CronJob(
   true
 );
 
-export default job
+export default job;

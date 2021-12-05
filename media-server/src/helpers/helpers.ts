@@ -5,7 +5,7 @@ const cmd = config.rtmp_server.fission.ffmpeg;
 export const generateStreamThumbnail = (stream_key: string) => {
     const args = [
         '-y',
-        '-i', 'http://127.0.0.1:8888/live/'+stream_key+'/index.m3u8',
+        '-i', 'http://127.0.0.1:8888/live/'+stream_key+'.flv',
         '-ss', '00:00:01',
         '-vframes', '1',
         '-vf', 'scale=-2:300',
