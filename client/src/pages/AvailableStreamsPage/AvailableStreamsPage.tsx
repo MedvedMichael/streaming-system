@@ -25,6 +25,7 @@ const AvailableStreamsPageView = styled.div`
   display: flex;
   flex-grow: 1;
   flex-direction: column;
+  margin-top: 6rem;
 `;
 
 const PlayerWrapper = styled.div`

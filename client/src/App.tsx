@@ -7,12 +7,16 @@ import ProfilePage from "pages/ProfilePage/ProfilePage";
 import StreamPage from "pages/StreamPage/StreamPage";
 import "video.js/dist/video-js.css";
 import AvailableStreamsPage from "pages/AvailableStreamsPage/AvailableStreamsPage";
+import Navbar from "components/navbar/navbar";
 
 function App() {
   return (
-    <AppView>
+    <AppView onKeyPress={() => {
+      console.log('PRESS')
+    }}>
       <Router>
         <MainLayout>
+          <Navbar/>
           <Switch>
             <Route path="/" exact component={LoginPage}></Route>
             <Route path="/registration" component={RegistrationPage}></Route>

@@ -11,6 +11,6 @@ export const getStreamsData = async (
   return (await get(FullGetAllStreamsRoute, accessToken)) as ServerStream[];
 };
 
-export const changeMyStreamName = async (accessToken: string, name: string) => {
-  return await patch(FullChangeStreamNameRoute, { name }, accessToken);
+export const changeMyStreamName = async (accessToken: string, streamKey: string, name: string) => {
+  return await patch(FullChangeStreamNameRoute, { name, streamKey }, accessToken);
 };

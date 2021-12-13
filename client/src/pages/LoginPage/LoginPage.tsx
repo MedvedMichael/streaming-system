@@ -65,7 +65,7 @@ export default observer(function LoginPage(): JSX.Element {
           value={password}
           onChange={(ev): void => setPassword(ev.target.value)}
         />
-        {showError ? <ErrorValidation>ERROR!</ErrorValidation> : null}
+        {showError ? <ErrorValidation>Invalid email or password!</ErrorValidation> : null}
         <ButtonBox>
           <StyledButton>Sign in</StyledButton>
           <GoogleLogin

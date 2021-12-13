@@ -65,7 +65,7 @@ export class StreamsService {
       chat.push({ text, postedBy, createdAt, nickname: user.nickname });
     }
 
-    return chat.sort((a, b) => b.createdAt > a.createdAt ? 1 : -1);
+    return chat.sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1));
   }
 
   async addNewMessage(message: Partial<IMessage>, streamKey: string) {
@@ -76,7 +76,7 @@ export class StreamsService {
     await stream.save();
   }
 
-  async fetchStreamsData(): Promise<ServerStream[]> {
+  async fetchStreamsData(name?: string): Promise<ServerStream[]> {
     const res = await fetch(`${process.env.MEDIA_SERVER_URL}/api/streams`);
     const result = await res.json();
 
@@ -90,16 +90,18 @@ export class StreamsService {
         const oldObj = streamsData.find((o) => o.streamKey === streamKey);
         if (!oldObj) {
           const stream = await this.getStreamByKey(streamKey);
-          streamsData.push({
-            streamKey,
-            name: stream.name,
-            streams: [
-              {
-                name: key,
-                info: data[key].publisher,
-              },
-            ],
-          });
+          if (!name || stream.name.includes(name)) {
+            streamsData.push({
+              streamKey,
+              name: stream.name,
+              streams: [
+                {
+                  name: key,
+                  info: data[key].publisher,
+                },
+              ],
+            });
+          }
         } else {
           oldObj.streams.push({
             name: key,

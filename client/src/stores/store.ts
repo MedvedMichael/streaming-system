@@ -29,7 +29,7 @@ import {
   IMessageWithNickname,
   ServerStream,
 } from "interfaces/Stream.interface";
-import { getStreamsData } from "services/streams.service";
+import { changeMyStreamName, getStreamsData } from "services/streams.service";
 
 export class ChatStore {
   accessToken!: string;
@@ -85,7 +85,10 @@ export class ChatStore {
         this.socket.listenTo(
           NewMessageNotification,
           (message: NewMessageNotificationParams) => {
-            this.currentChat = [{...message, createdAt: new Date(message.createdAt)}, ...this.currentChat];
+            this.currentChat = [
+              { ...message, createdAt: new Date(message.createdAt) },
+              ...this.currentChat,
+            ];
           }
         );
       });
@@ -165,7 +168,20 @@ export class ChatStore {
   }
 
   async fetchStreamsData() {
-    this.streamsData = await getStreamsData(this.accessToken);
+    try {
+      this.streamsData = await getStreamsData(this.accessToken);
+    } catch {
+      window.history.pushState(null, "", "/");
+      document.location.reload();
+    }
+  }
+
+  async changeStreamName(newName: string) {
+    await changeMyStreamName(this.accessToken, this.user.streamKey, newName);
+    const stream = this.streamsData.find(
+      (s) => s.streamKey === this.user.streamKey
+    );
+    if (stream) stream.name = newName;
   }
 }
 

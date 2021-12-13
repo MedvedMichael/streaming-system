@@ -7,6 +7,7 @@ export const LoginForm = styled.form`
 
 export const LoginDiv = styled.div`
   margin: 0 auto;
+  margin-top: 5rem;
   padding: 1rem 5rem;
   display: flex;
   flex-direction: column;

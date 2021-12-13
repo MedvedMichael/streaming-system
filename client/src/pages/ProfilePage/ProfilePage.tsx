@@ -52,6 +52,7 @@ export default observer(function ProfilePage(): JSX.Element {
   useEffect(() => {
     if (chatStore.initialized) {
       getProfile();
+      chatStore.fetchStreamsData();
     }
   }, [chatStore.initialized, params]);
 
@@ -155,6 +156,18 @@ export default observer(function ProfilePage(): JSX.Element {
     </StyledButton>
   );
 
+  const goToYourStreamButton = chatStore.streamsData.find(
+    (s) => s.streamKey === chatStore.user.streamKey
+  ) ? (
+    <StyledButton
+      onClick={(): void => {
+        history.push(`/stream/${chatStore.user.streamKey}`);
+      }}
+    >
+      Go to my stream page
+    </StyledButton>
+  ) : null;
+
   const changePasswordButton = user.authProviders.includes("local") ? (
     <StyledButton onClick={(): void => setShowChangePasswordModal(true)}>
       Change password
@@ -172,7 +185,8 @@ export default observer(function ProfilePage(): JSX.Element {
       onClick={async () => {
         await logout();
         reloadChatStore();
-        window.location.reload();
+        window.history.pushState(null, "", "/");
+        document.location.reload();
       }}
     >
       Logout
@@ -201,6 +215,7 @@ export default observer(function ProfilePage(): JSX.Element {
         </StyledButton>
         {user?._id === chatStore?.user._id && (
           <>
+            {goToYourStreamButton}
             {changeProfileButton}
             {changePasswordButton}
             {changeStreamKeyButton}

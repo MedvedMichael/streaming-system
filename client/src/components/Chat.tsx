@@ -1,6 +1,6 @@
 import { IMessageWithNickname } from "interfaces/Stream.interface";
 import { observer } from "mobx-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import styled from "styled-components";
 import { StyledButton } from "./styled/styled-button";
 
@@ -12,26 +12,30 @@ export default observer(function Chat({
   onMessageAdd: (text: string) => void;
 }) {
   const [newMessage, setNewMessage] = useState("");
+  const inputRef =
+    useRef<HTMLInputElement>() as React.LegacyRef<HTMLInputElement>;
   return (
     <ChatView>
-      <NewMessageForm>
+      <NewMessageForm
+        onSubmit={(e) => {
+          e.preventDefault();
+          onMessageAdd(newMessage);
+          setNewMessage("");
+        }}
+      >
         <input
+          id="chat-input"
+          ref={inputRef}
           type="text"
+          autoComplete="off"
           value={newMessage}
           onChange={({ target }) => setNewMessage(target.value)}
         />
-        <StyledButton
-          onClick={() => {
-            onMessageAdd(newMessage);
-            setNewMessage("");
-          }}
-        >
-          Send
-        </StyledButton>
+        <StyledButton>Send</StyledButton>
       </NewMessageForm>
       <MessagesBlock>
         {messages.map((m) => (
-          <MessageCard message={m} />
+          <MessageCard key={`${m.nickname}-${m.createdAt}`} message={m} />
         ))}
       </MessagesBlock>
     </ChatView>
@@ -44,7 +48,7 @@ const MessageCard = observer(function ({
   message: IMessageWithNickname;
 }) {
   return (
-    <MessageView key={`${message.nickname}-${message.createdAt}`}>
+    <MessageView>
       <h5>{message.nickname}</h5>
       <span>{message.text}</span>
       <span>{message.createdAt.toLocaleString()}</span>
@@ -75,10 +79,15 @@ const MessageView = styled.div`
   & h5 {
     margin: 0;
   }
+
+  & span {
+    word-wrap: break-word;
+  }
 `;
 
-const NewMessageForm = styled.div`
+const NewMessageForm = styled.form`
   display: flex;
+  margin-bottom: 0.5rem;
   & input {
     flex-grow: 1;
     border-radius: 0.5rem 0 0 0.5rem;

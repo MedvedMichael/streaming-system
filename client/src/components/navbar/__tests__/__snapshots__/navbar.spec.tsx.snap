@@ -1,0 +1,59 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should render 1`] = `
+<Component
+  theme={
+    Object {
+      "bg": Object {
+        "aboutMe": "linear-gradient(to right, #5e9be0, #c8d8e3)",
+        "card": "linear-gradient(to right, #5e9be0, #6fa5e3)",
+        "input": "rgba(65,67,78,0.12)",
+        "inset": "#5e9be0",
+        "nav": "#437dbf",
+        "primary": "#86c1f0",
+        "secondary": "#5e9be0",
+      },
+      "border": Object {
+        "card": "1px solid #18304d",
+      },
+      "dark": false,
+      "fontSizes": Array [
+        "14px",
+        "16px",
+        "18px",
+        "22px",
+        "26px",
+        "32px",
+        "40px",
+      ],
+      "fontWeights": Object {
+        "body": 400,
+        "bold": 700,
+        "heading": 800,
+        "link": 600,
+        "subheading": 500,
+      },
+      "lineHeights": Object {
+        "body": 1.5,
+        "code": 1.6,
+        "heading": 1.3,
+      },
+      "text": Object {
+        "onPrimary": "#ffffff",
+        "placeholder": "rgba(82,85,96,0.5)",
+        "primary": "#fbfbfc",
+        "quarternary": "#9194a1",
+        "secondary": "#2f3037",
+        "tertiary": "#525560",
+      },
+      "transition": Object {
+        "bg": "background 300ms linear 0s",
+        "opacity": "opacity 200ms ease",
+        "primary": "all 300ms linear 0s",
+      },
+    }
+  }
+>
+  <Navbar />
+</Component>
+`;

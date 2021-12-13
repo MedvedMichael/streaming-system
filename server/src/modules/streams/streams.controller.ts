@@ -14,12 +14,17 @@ import {
   ValidationPipe,
   forwardRef,
   Inject,
+  Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { JwtValidationOutput } from '../auth/strateries/jwt.strategy';
 import { UsersService } from '../users/users.service';
 import { StreamsService } from './streams.service';
-import {ChangeStreamNameRoute, GetAllStreamsRoute, StreamsRoute} from '@interfaces/routes/stream-routes'
+import {
+  ChangeStreamNameRoute,
+  GetAllStreamsRoute,
+  StreamsRoute,
+} from '@interfaces/routes/stream-routes';
 
 @Controller(StreamsRoute)
 export class StreamsController {
@@ -43,8 +48,16 @@ export class StreamsController {
 
   @UseGuards(JwtAuthGuard)
   @Get(GetAllStreamsRoute)
-  async getServerStreams(): Promise<ServerStream[]> {
+  async getAllServerStreams(): Promise<ServerStream[]> {
     return this.streamsService.fetchStreamsData();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(GetAllStreamsRoute)
+  async getServerStreams(
+    @Query('name') name: string
+  ): Promise<ServerStream[]> {
+    return this.streamsService.fetchStreamsData(name);
   }
 
   @UsePipes(new ValidationPipe({ transform: true }))
@@ -65,8 +78,10 @@ export class StreamsController {
   async changeStreamName(
     @Request() { user }: JwtValidationOutput,
     @Body('name') newName: string,
+    @Body('streamKey') streamKey: string,
   ): Promise<void> {
     const oldUser = await this.usersService.getProfile(user.userID);
-    this.streamsService.changeStreamName(newName, oldUser.streamKey);
+    if (oldUser.streamKey !== streamKey) throw new UnauthorizedException();
+    this.streamsService.changeStreamName(oldUser.streamKey, newName);
   }
 }

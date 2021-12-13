@@ -32,6 +32,7 @@ export const ProfileBlockView = styled.div`
   flex-wrap: wrap;
   flex-direction: column;
   padding: 0 1rem;
+  margin-top: 5rem;
 `;
 export const InfoBlock = styled.div`
   display: flex;

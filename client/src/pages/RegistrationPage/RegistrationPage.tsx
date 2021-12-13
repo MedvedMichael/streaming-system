@@ -60,7 +60,7 @@ export default observer(function RegistrationPage(): JSX.Element {
             letter and one symbol
           </ErrorValidation>
         ) : null}
-        {showError ? <ErrorValidation>ERROR!</ErrorValidation> : null}
+        {showError ? <ErrorValidation>Check email and password</ErrorValidation> : null}
         <StyledButton className="register">Register now</StyledButton>
       </RegistrationForm>
       <StyledButton

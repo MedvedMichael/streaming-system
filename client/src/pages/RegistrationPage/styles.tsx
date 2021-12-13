@@ -2,6 +2,7 @@ import styled from 'styled-components';
 
 export const RegistrationDiv = styled.div`
   margin: 0 auto;
+  margin-top: 5rem;
   padding: 1rem 5rem;
   display: flex;
   flex-direction: column;
