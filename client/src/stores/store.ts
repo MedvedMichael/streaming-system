@@ -1,27 +1,17 @@
 import { makeAutoObservable } from "mobx";
 import WebSocketClient from "socket";
-import Chat from "interfaces/chat";
 import { NewMessage } from "interfaces/new-message";
-import { v4 as uuid } from "uuid";
 import {
-  AddNewChatFunction,
-  AddNewChatParams,
   AddNewMessageFunction,
-  AddNewMessageParams,
   ConnectionStatusNotification,
   ConnectionStatusNotificationPayload,
   DeliveredEvent,
-  GetMessagesFunction,
-  GetMessagesFunctionResponse,
   GetStreamChatFunction,
   GetStreamChatResponse,
-  // GetOldMessagesResponse,
-  NewChatNotification,
   NewMessageNotification,
   NewMessageNotificationParams,
   SetStreamFunction,
 } from "interfaces/rpc-events";
-import { ServerMessage } from "interfaces/message";
 import { refresh } from "services/auth.service";
 import { getMyProfile } from "services/users.service";
 import { IProfile } from "interfaces/User.interface";

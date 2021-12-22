@@ -12,17 +12,11 @@ import broadcast from 'src/helpers/broadcast';
 import { ChattingSession, ChattingsService } from './chattings.service';
 import { NewMessage } from '@interfaces/new-message';
 import {
-  AddNewChatFunction,
-  AddNewChatParams,
   AddNewMessageFunction,
   ConnectionStatusNotification,
   ConnectionStatusNotificationPayload,
   DeliveredEvent,
-  GetMessagesFunction,
-  GetMessagesFunctionResponse,
   GetStreamChatFunction,
-  NewChatNotification,
-  NewChatNotificationParams,
   NewMessageNotification,
   NewMessageNotificationParams,
   GetStreamChatResponse,
